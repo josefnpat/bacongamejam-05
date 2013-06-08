@@ -8,27 +8,27 @@ function parts.load()
     right_arm = {
       x = 44,
       y = 16,
-      i = 0
+      i = 0,
     },
     left_arm = {
       x = 4,
       y = 16,
-      i = 1
+      i = 1,
     },
     left_leg = {
       x = 12,
       y = 44,
-      i = 2
+      i = 2,
     },
     right_leg = {
       x = 36,
       y = 44,
-      i = 3
+      i = 3,
     },
     head = {
       x = 24,
       y = 4,
-      i = 4
+      i = 4,
     },
     torso = {
       x = 24,
@@ -36,11 +36,36 @@ function parts.load()
       i = 5
     }
   }
+
+  parts.data_count = 0
+  for i,v in pairs(parts.data) do
+    parts.data_count = parts.data_count + 1
+  end
+
   parts.img.data = love.graphics.newImage("assets/parts.png")
   parts.img.data:setFilter("nearest","nearest")
   for i,v in pairs(parts.data) do
     v.quad = love.graphics.newQuad(v.i*16,0,16,16,128,16)
   end
+end
+
+function parts.haveall()
+  for i,v in pairs(parts.data) do
+    if v.inv ~= true then
+      return false
+    end
+  end
+  return true
+end
+
+function parts.random()
+  repeat
+    for i,v in pairs(parts.data) do
+      if not v.inv and math.random(0,1) == 0 then
+        return i
+      end
+    end
+  until false
 end
 
 function parts.draw()

@@ -8,7 +8,10 @@ function map.load()
 
   map.data = love.graphics.newImage("assets/map.png")
   map.data:setFilter("nearest","nearest")
-  
+
+  map.darkness = love.graphics.newImage("assets/darkness.png")
+  map.darkness:setFilter("nearest","nearest")
+
   map.tile = {}
   for i = 1,map.data:getWidth()/16 do
     map.tile[i-1] = love.graphics.newQuad( (i-1)*16, 0, 16,16,map.data:getWidth(), 16 )
@@ -35,7 +38,11 @@ function map.load()
     y = math.floor(map.size/2+0.5),
     dir = 1,
     img = map.ents[1],
-    speed = 3
+    speed = 3,
+    type = "player",
+    awake = 0,
+    battery = 1,
+    battery_charge = 0
   }
 
   map.room = {}
@@ -45,25 +52,34 @@ end
 
 function map.draw_ent(ent)
   local quad
+  local img
   
-  if ent.tarx then
-    if ent.x%1 > 0.5 then
-      quad = ent.img.move[ent.dir]
+  if ent.type == "badguy" or ent.type == "player" then
+
+    img = map.ents_data
+    if ent.tarx then
+      if ent.x%1 > 0.5 then
+        quad = ent.img.move[ent.dir]
+      else
+        quad = ent.img.face[ent.dir]
+      end
+    elseif ent.tary then
+      if ent.y%1 > 0.5 then
+        quad = ent.img.move[ent.dir]
+      else
+        quad = ent.img.face[ent.dir]
+      end
     else
       quad = ent.img.face[ent.dir]
     end
-  elseif ent.tary then
-    if ent.y%1 > 0.5 then
-      quad = ent.img.move[ent.dir]
-    else
-      quad = ent.img.face[ent.dir]
-    end
-  else
-    quad = ent.img.face[ent.dir]
+  
+  elseif ent.type == "part" then
+    img = parts.img.data
+    quad = parts.data[ent.part].quad
   end
 
   love.graphics.drawq(
-    map.ents_data,quad,
+    img,quad,
     (ent.x-1)*16*map.scale+map.x_offset,(ent.y-1)*16*map.scale+map.y_offset,
     0,map.scale,map.scale)
 end
@@ -96,6 +112,10 @@ function map.roomgen()
     room.ents[i] = map.badguygen(room)
   end
   
+  if not parts.haveall() and math.random(0,1) == 0 then
+    room.ents[#room.ents+1] = map.partgen(room)
+  end
+  
   return room
 end
 
@@ -115,8 +135,17 @@ function map.badguygen(room)
   return ent
 end
 
-function partgen(room)
-
+function map.partgen(room)
+  local ent
+  repeat
+    ent = {
+      part = parts.random(),
+      x = math.random(1,map.size),
+      y = math.random(1,map.size),
+      type = "part"
+    }
+  until not map.collide(room,ent.x,ent.y)
+  return ent
 end
 
 function map.door(x,y)
@@ -150,12 +179,34 @@ function map.draw()
     end
   end
   
-  map.draw_ent(map.player)
-  
   for i,ent in pairs(map.room[1].ents) do
     map.draw_ent(ent)
   end
+
+  map.draw_ent(map.player)
   
+  local coff = 16*map.scale/2
+
+  love.graphics.setScissor(map.x_offset,map.y_offset,480,480)
+  
+  love.graphics.draw(map.darkness,
+    map.x_offset + (map.player.x-1)*16*map.scale+coff,map.y_offset + (map.player.y-1)*16*map.scale+coff,
+    0,map.scale,map.scale,
+    240,240)
+    
+  love.graphics.setScissor()
+
+  local alpha = math.floor((1-map.player.battery)*255)
+  love.graphics.setColor(0,0,0,alpha)
+  love.graphics.rectangle("fill",map.x_offset,map.y_offset,480,480)
+  love.graphics.setColor(255,255,255)
+    
+  if alpha == 255 then
+    love.graphics.setFont(fonts.horror)
+    love.graphics.printf("PRESS SPACE TO\nCHARGE YOUR BATTERY.",
+      map.x_offset,map.y_offset+240,480,"center")
+  end
+
 end
 
 function map.collide(room,x,y)
@@ -165,39 +216,55 @@ function map.collide(room,x,y)
 end
 
 function map.update_ent(ent,dt)
-  local tol = 1/16
-  local speed = ent.speed
+
+  if ent.type == "badguy" or ent.type =="player" then
+    local tol = 1/16
+    local speed = ent.speed
   
-  if ent.tarx then
+    if ent.tarx then
+      if ent.tarx > ent.x then
+        ent.x = ent.x + speed*dt
+      else
+        ent.x = ent.x - speed*dt
+      end
+      if ent.x - tol < ent.tarx and ent.x + tol > ent.tarx  then
+        ent.x = ent.tarx
+        ent.tarx = nil
+      end
+    end
 
-    if ent.tarx > ent.x then
-      ent.x = ent.x + speed*dt
-    else
-      ent.x = ent.x - speed*dt
+    if ent.tary then
+      if ent.tary > ent.y then
+        ent.y = ent.y + speed*dt
+      else
+        ent.y = ent.y - speed*dt
+      end
+      if ent.y - tol < ent.tary and ent.y + tol > ent.tary  then
+        ent.y = ent.tary
+        ent.tary = nil
+      end
     end
     
-    if ent.x - tol < ent.tarx and ent.x + tol > ent.tarx  then
-      ent.x = ent.tarx
-      ent.tarx = nil
+    if ent.type ~= "player" and map.dist(ent,map.player) < 1  then
+      map.player.awake = map.player.awake + 0.3
+      if map.player.awake > 1 then
+        map.player.awake = 1
+      end
+      ent._remove = true
     end
     
-  end
+  elseif ent.type == "part" then
 
-  if ent.tary then
-
-    if ent.tary > ent.y then
-      ent.y = ent.y + speed*dt
-    else
-      ent.y = ent.y - speed*dt
+    if ent.x == map.player.tarx and ent.y == map.player.tary then
+      parts.data[ent.part].inv = true
+      ent._remove = true
     end
-
-
-    if ent.y - tol < ent.tary and ent.y + tol > ent.tary  then
-      ent.y = ent.tary
-      ent.tary = nil
-    end
+  
   end
+end
 
+function map.dist(a,b)
+  return math.sqrt( ( a.x - b.x) ^ 2 + (a.y - b.y) ^2 )
 end
 
 function map.update(dt)
@@ -231,6 +298,12 @@ function map.update(dt)
        ent.tary = tary
      end
       
+    end
+  end
+
+  for i,ent in pairs(map.room[1].ents) do
+    if ent._remove then
+      table.remove(map.room[1].ents,i)
     end
   end
 

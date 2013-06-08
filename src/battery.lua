@@ -24,4 +24,22 @@ function battery.draw(perc)
   love.graphics.setScissor()
 end
 
+function battery.update(dt)
+  map.player.battery = map.player.battery - 0.1*dt
+  if map.player.battery < 0 then
+    map.player.battery = 0
+  end
+  
+end
+
+function battery.keypressed(key)
+  if map.player.battery == 0 and key == " " then
+    map.player.battery_charge = map.player.battery_charge + math.random(5,25)/100
+    if map.player.battery_charge >= 1 then
+      map.player.battery_charge = 0
+      map.player.battery = 1
+    end
+  end
+end
+
 return battery
