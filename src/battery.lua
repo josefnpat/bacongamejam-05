@@ -1,4 +1,4 @@
-battery = {}
+local battery = {}
 
 function battery.load()
   battery.img = {}
@@ -25,7 +25,9 @@ function battery.draw(perc)
 end
 
 function battery.update(dt)
-  map.player.battery = map.player.battery - 0.1*dt
+  if not map.roomcurrent.noflashlight then
+    map.player.battery = map.player.battery - 0.1*dt
+  end
   if map.player.battery < 0 then
     map.player.battery = 0
   end

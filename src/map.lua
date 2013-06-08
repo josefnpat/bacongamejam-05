@@ -1,4 +1,4 @@
-map = {}
+local map = {}
 
 function map.load()
 
@@ -34,8 +34,8 @@ function map.load()
   map.size = 15
 
   map.player = {
-    x = math.floor(map.size/2+0.5),
-    y = math.floor(map.size/2+0.5),
+    x = 3,
+    y = 3,
     dir = 1,
     img = map.ents[1],
     speed = 3,
@@ -46,7 +46,24 @@ function map.load()
   }
 
   map.room = {}
-  map.room[1] = map.roomgen()
+  map.room_home = {
+    ents = {},
+    noflashlight = true,
+    breadcrumb = 0,
+    tiles = {
+      {1,1,1,1,1,1,1,0,1},
+      {1,0,0,0,0,0,0,0,1},
+      {1,0,0,0,0,1,0,0,1,1,1,1},
+      {1,0,0,0,0,1,0,0,1,0,0,1},
+      {1,0,0,0,0,1,0,0,0,0,0,1},
+      {1,0,0,0,0,1,0,0,1,0,0,1},
+      {1,1,1,1,1,1,1,1,1,1,1,1}
+    },
+  }
+  map.room_home.up = map.roomgen("up",map.room_home)
+  
+  
+  map.roomcurrent = map.room_home
 
 end
 
@@ -84,9 +101,17 @@ function map.draw_ent(ent)
     0,map.scale,map.scale)
 end
 
-function map.roomgen()
+map.breadcrumb = 0
+
+function map.roomgen(door,prevroom)
   local room = {}
+  map.breadcrumb = map.breadcrumb + 1
+  room.breadcrumb = map.breadcrumb
+  room[map.dooropposite(door)] = prevroom
   room.tiles = {}
+  if debug_mode then
+    room.noflashlight = true
+  end
   for y = 1,map.size do
     room.tiles[y] = {}
     for x = 1,map.size do
@@ -107,9 +132,11 @@ function map.roomgen()
   end
   
   room.ents = {}
-  local maxnumbaddies = 4
-  for i = 1,math.random(1,maxnumbaddies) do
-    room.ents[i] = map.badguygen(room)
+  local maxnumbadguys = math.floor(map.breadcrumb/3)
+  if maxnumbadguys > 1 then
+    for i = 1,math.random(1,maxnumbadguys) do
+      room.ents[i] = map.badguygen(room)
+    end
   end
   
   if not parts.haveall() and math.random(0,1) == 0 then
@@ -173,38 +200,43 @@ function map.doormat(x,y)
 end
 
 function map.draw()
-  for j,v in pairs(map.room[1].tiles) do
+  for j,v in pairs(map.roomcurrent.tiles) do
     for i,w in pairs(v) do
       love.graphics.drawq(map.data,map.tile[w],(i-1)*32+map.x_offset,(j-1)*32+map.y_offset,0,map.scale,map.scale)
     end
   end
   
-  for i,ent in pairs(map.room[1].ents) do
+  for i,ent in pairs(map.roomcurrent.ents) do
     map.draw_ent(ent)
   end
 
   map.draw_ent(map.player)
   
-  local coff = 16*map.scale/2
+  if not map.roomcurrent.noflashlight then
 
-  love.graphics.setScissor(map.x_offset,map.y_offset,480,480)
+    local coff = 16*map.scale/2
+
+    love.graphics.setScissor(map.x_offset,map.y_offset,480,480)
   
-  love.graphics.draw(map.darkness,
-    map.x_offset + (map.player.x-1)*16*map.scale+coff,map.y_offset + (map.player.y-1)*16*map.scale+coff,
-    0,map.scale,map.scale,
-    240,240)
-    
-  love.graphics.setScissor()
+    love.graphics.draw(map.darkness,
+      map.x_offset + (map.player.x-1)*16*map.scale+coff,map.y_offset + (map.player.y-1)*16*map.scale+coff,
+      0,map.scale,map.scale,
+      240,240)
+  
+  
+    love.graphics.setScissor()
 
-  local alpha = math.floor((1-map.player.battery)*255)
-  love.graphics.setColor(0,0,0,alpha)
-  love.graphics.rectangle("fill",map.x_offset,map.y_offset,480,480)
-  love.graphics.setColor(255,255,255)
+    local alpha = math.floor((1-map.player.battery)*255)
+    love.graphics.setColor(0,0,0,alpha)
+    love.graphics.rectangle("fill",map.x_offset,map.y_offset,480,480)
+    love.graphics.setColor(255,255,255)
     
-  if alpha == 255 then
-    love.graphics.setFont(fonts.horror)
-    love.graphics.printf("PRESS SPACE TO\nCHARGE YOUR BATTERY.",
-      map.x_offset,map.y_offset+240,480,"center")
+    if alpha == 255 then
+      love.graphics.setFont(fonts.horror)
+      love.graphics.printf("PRESS SPACE TO\nCHARGE YOUR BATTERY.",
+        map.x_offset,map.y_offset+240,480,"center")
+    end
+    
   end
 
 end
@@ -258,6 +290,9 @@ function map.update_ent(ent,dt)
     if ent.x == map.player.tarx and ent.y == map.player.tary then
       parts.data[ent.part].inv = true
       ent._remove = true
+      if parts.haveall() then
+        states.cut.current = 100
+      end
     end
   
   end
@@ -269,7 +304,11 @@ end
 
 function map.update(dt)
 
-  for _,ent in pairs(map.room[1].ents) do
+  if map.roomcurrent.breadcrumb == 0 and parts.haveall() then
+    states.cut.current = 200
+  end
+
+  for _,ent in pairs(map.roomcurrent.ents) do
     if ent.tarx or ent.tary then
       map.update_ent(ent,dt)
     else
@@ -293,7 +332,7 @@ function map.update(dt)
         end
       end
       
-     if not map.collide(map.room[1],tarx,tary) and not map.door(tarx,tary) then
+     if not map.collide(map.roomcurrent,tarx,tary) and not map.door(tarx,tary) then
        ent.tarx = tarx
        ent.tary = tary
      end
@@ -301,9 +340,9 @@ function map.update(dt)
     end
   end
 
-  for i,ent in pairs(map.room[1].ents) do
+  for i,ent in pairs(map.roomcurrent.ents) do
     if ent._remove then
-      table.remove(map.room[1].ents,i)
+      table.remove(map.roomcurrent.ents,i)
     end
   end
 
@@ -311,24 +350,42 @@ function map.update(dt)
   if map.player.tarx or map.player.tary then
     map.update_ent(map.player,dt)
   elseif door then
-    -- TODO: generate new map, m, and add it to the tree
-    
-    -- DEBUG: For testing:  
-    map.room[1] = map.roomgen()
+
+    if map.roomcurrent[door] then
+      map.roomcurrent = map.roomcurrent[door]
+    else
+      local newroom = map.roomgen(door,map.roomcurrent)
+      map.roomcurrent[door] = newroom
+      map.roomcurrent = map.roomcurrent[door]
+    end
+
+    if debug_mode then
+      print("Current room: ",map.roomcurrent.breadcrumb)
+      for i,v in pairs({"up","down","left","right"}) do
+        if map.roomcurrent[v] then
+          print(v,map.roomcurrent[v].breadcrumb)
+        else
+          print(v,"unvisited")
+        end
+      end
+    end
     
     if door == "up" then
       map.player.y = map.size-1
-      -- TODO: add m to tree
     elseif door == "down" then
       map.player.y = 2    
-      -- TODO: add m to tree
     elseif door == "right" then
       map.player.x = 2
-      -- TODO: add m to tree
     elseif door == "left" then
       map.player.x = map.size-1
-      -- TODO: add m to tree
     end
+
+    if map.roomcurrent == map.room_home and parts.haveall() then
+      states.cut.current = 200
+    end
+
+    Gamestate.switch(states.cut)
+    
   else
    local tarx, tary = map.player.x, map.player.y
    local moving = false
@@ -350,13 +407,25 @@ function map.update(dt)
      map.player.dir = 1
    end
   
-   if not map.collide(map.room[1],tarx,tary) and moving then
+   if not map.collide(map.roomcurrent,tarx,tary) and moving then
      map.player.tarx = tarx
      map.player.tary = tary
    end
    
  end
   
+end
+
+function map.dooropposite(door)
+  if door == "up" then
+    return "down"
+  elseif door == "down" then
+    return "up"
+  elseif door == "left" then
+    return "right"
+  elseif door == "right" then
+    return "left"
+  end
 end
 
 return map

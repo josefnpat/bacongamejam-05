@@ -1,4 +1,4 @@
-parts = {}
+local parts = {}
 
 function parts.load()
   parts.img = {}
@@ -9,26 +9,31 @@ function parts.load()
       x = 44,
       y = 16,
       i = 0,
+      inv = debug_mode
     },
     left_arm = {
       x = 4,
       y = 16,
       i = 1,
+      inv = debug_mode
     },
     left_leg = {
       x = 12,
       y = 44,
       i = 2,
+      inv = debug_mode
     },
     right_leg = {
       x = 36,
       y = 44,
       i = 3,
+      inv = debug_mode
     },
     head = {
       x = 24,
       y = 4,
       i = 4,
+      inv = debug_mode
     },
     torso = {
       x = 24,

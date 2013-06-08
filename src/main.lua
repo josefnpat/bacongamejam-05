@@ -1,39 +1,30 @@
 math.randomseed( os.time() )
-eye = require("eye")
-parts = require("parts")
-battery = require("battery")
-map = require("map")
 
-fonts = {}
+debug_mode = false
+
+Gamestate = require "ext.gamestate"
+
+states = {}
+states.intro = require("state_intro")
+states.game = require("state_game")
+states.cut = require("state_cut")
+
+fonts = {} 
 fonts.horror = love.graphics.newFont("assets/FEASFBRG.ttf",32)
-fonts.normal = love.graphics.newFont("assets/EBGaramond-Regular.ttf",16)
+fonts.normal = love.graphics.newFont("assets/EBGaramond-Regular.ttf",24)
 
 function love.load()
-  eye.load()
-  parts.load()
-  battery.load()
-  map.load()
-end
-
-function love.draw()
-  love.graphics.setColor(195,195,195)
-  love.graphics.rectangle("fill",0,0,160,480)
-  love.graphics.setColor(255,255,255)
-  eye.draw(map.player.awake)
-  parts.draw()
-  if map.player.battery == 0 then
-    battery.draw(map.player.battery_charge)  
-  else
-    battery.draw(map.player.battery)
-  end
-  map.draw()
-end
-
-function love.update(dt)
-  map.update(dt)
-  battery.update(dt)
+  Gamestate.registerEvents()
+  Gamestate.switch(states.intro)
 end
 
 function love.keypressed(key)
-  battery.keypressed(key)
+  if key == "`" then
+    debug_mode = not debug_mode
+    if debug_mode then
+      print("debug_mode enabled")
+    else
+      print("debug_mode disabled")
+    end
+  end
 end

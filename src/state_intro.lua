@@ -20,16 +20,16 @@ function intro:update(dt)
   end
   msssplash.update(dt)
   if msssplash.done() then
-    Gamestate.switch(states.game)
+    Gamestate.switch(states.cut)
   end
 end
 
-function love.keypressed()
+function intro:keypressed()
   if intro.love then
     intro.love = false
     lovesplash.stop()
   else
-    Gamestate.switch(states.game)
+    Gamestate.switch(states.cut)
   end
 end
 

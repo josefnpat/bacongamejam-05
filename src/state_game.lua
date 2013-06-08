@@ -10,7 +10,7 @@ function game:init()
   parts.load()
   battery.load()
   map.load()
-
+  
 end
 
 function game:draw()
@@ -30,6 +30,7 @@ end
 function game:update(dt)
   map.update(dt)
   battery.update(dt)
+  eye.update(dt)
 end
 
 function game:keypressed(key)
