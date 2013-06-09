@@ -2,6 +2,8 @@ local map = {}
 
 function map.load()
 
+  map.hit = love.audio.newSource("assets/hit.mp3","static")
+
   map.x_offset = 160
   map.y_offset = 0
   map.scale = 2
@@ -282,6 +284,7 @@ function map.update_ent(ent,dt)
       if map.player.awake > 1 then
         map.player.awake = 1
       end
+      love.audio.play(map.hit)
       ent._remove = true
     end
     
