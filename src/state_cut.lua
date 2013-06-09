@@ -7,6 +7,7 @@ function cut:init()
   faces.heroine_scared = love.graphics.newImage("assets/faces/heroine-scared.png")
   faces.sibling_scared = love.graphics.newImage("assets/faces/sibling-scared.png")
   faces.horror = love.graphics.newImage("assets/faces/horror-default.png")
+  faces.seppi = love.graphics.newImage("assets/faces/seppi-default.png")
   faces.eyes = love.graphics.newImage("assets/faces/eyes.png")
   
   for i,v in pairs(faces) do
@@ -142,9 +143,8 @@ function cut:init()
   }
 
   cut.scenes[206] = {
-    img = faces.horror,
-    text = "<< THANKS FOR PLAYING! >>\n"..
-           "<< VISIT >>\n<< MISSINGSENTINELSOFTWARE.COM >>\n<< FOR MORE! >>",
+    img = faces.seppi,
+    text = "Thanks for playing!\nThis game was made for the Bacon Game Jam 5\nVisit missingsentinelsoftware.com for more!\n-josefnpat",
     next = 206
   }
   

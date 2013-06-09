@@ -26,8 +26,8 @@ function map.load()
     map.ents[i].face = {}
     map.ents[i].move = {}
     for j = 1,4 do
-      map.ents[i].face[j] = love.graphics.newQuad( (j-1)*32   ,(j-1)*16,16,16, map.ents_data:getWidth(), map.ents_data:getHeight()  )
-      map.ents[i].move[j] = love.graphics.newQuad( (j-1)*32+16,(j-1)*16,16,16, map.ents_data:getWidth(), map.ents_data:getHeight()  )
+      map.ents[i].face[j] = love.graphics.newQuad( (j-1)*32   ,(i-1)*16,16,16, map.ents_data:getWidth(), map.ents_data:getHeight()  )
+      map.ents[i].move[j] = love.graphics.newQuad( (j-1)*32+16,(i-1)*16,16,16, map.ents_data:getWidth(), map.ents_data:getHeight()  )
     end
   end  
 

@@ -26,7 +26,7 @@ end
 
 function battery.update(dt)
   if not map.roomcurrent.noflashlight then
-    map.player.battery = map.player.battery - 0.1*dt
+    map.player.battery = map.player.battery - 0.05*dt
   end
   if map.player.battery < 0 then
     map.player.battery = 0
