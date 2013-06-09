@@ -1,5 +1,5 @@
 function love.conf(t)
-    t.title = "Sis, Help me!"   -- The title of the window the game is in (string)
+    t.title = "Sis, Help Me!"   -- The title of the window the game is in (string)
     t.author = "josefnpat"        -- The author of the game (string)
     t.url = nil                 -- The website of the game (string)
     t.identity = nil            -- The name of the save directory (string)

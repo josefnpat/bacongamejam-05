@@ -19,7 +19,7 @@ function cut:init()
 
   cut.scenes[1] = {
     img = faces.sibling_scared,
-    text = "Sis, Help me!",
+    text = "Sis, Help Me!",
     next = 2,
   }
 

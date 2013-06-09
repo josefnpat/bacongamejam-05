@@ -2,6 +2,10 @@ math.randomseed( os.time() )
 
 debug_mode = false
 
+music = love.audio.newSource("assets/Kosta_T_-_Ti_adoro.mp3")
+music:setLooping(true)
+love.audio.play(music)
+
 Gamestate = require "ext.gamestate"
 
 states = {}
