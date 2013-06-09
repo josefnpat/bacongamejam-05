@@ -1,5 +1,8 @@
 math.randomseed( os.time() )
 
+git,git_count = "missing git.lua",0
+pcall( function() return require("git") end );
+print("HMSv"..git_count,git)
 debug_mode = false
 
 music = love.audio.newSource("assets/Kosta_T_-_Ti_adoro.mp3")
