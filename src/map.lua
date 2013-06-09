@@ -13,7 +13,7 @@ function map.load()
   map.darkness:setFilter("nearest","nearest")
 
   map.tile = {}
-  for i = 1,map.data:getWidth()/16 do
+  for i = 1,map.data:getWidth()/16+1 do
     map.tile[i-1] = love.graphics.newQuad( (i-1)*16, 0, 16,16,map.data:getWidth(), 16 )
   end
 
@@ -51,13 +51,13 @@ function map.load()
     noflashlight = true,
     breadcrumb = 0,
     tiles = {
-      {1,1,1,1,1,1,1,0,1},
-      {1,0,0,0,0,0,0,0,1},
-      {1,0,0,0,0,1,0,0,1,1,1,1},
-      {1,0,0,0,0,1,0,0,1,0,0,1},
-      {1,0,0,0,0,1,0,0,0,0,0,1},
-      {1,0,0,0,0,1,0,0,1,0,0,1},
-      {1,1,1,1,1,1,1,1,1,1,1,1}
+      {1, 1, 1, 1, 1,1, 1,0,1},
+      {1, 3,10,11, 0,0, 0,0,1},
+      {1, 0,12, 0, 0,1, 0,0,1,1,1, 1, 1,1},
+      {1, 0, 0, 0, 0,1, 0,0,1,2,0,14, 2,1},
+      {1, 13, 0,0, 0,1, 0,0,0,0,0, 0, 0,1},
+      {1, 0, 8, 9,15,1,15,7,1,0,0, 0,15,1},
+      {1, 1, 1, 1, 1,1, 1,1,1,1,1, 1, 1,1}
     },
   }
   map.room_home.up = map.roomgen("up",map.room_home)
