@@ -14,7 +14,7 @@ function game:init()
 end
 
 function game:draw()
-  love.graphics.setColor(195,195,195)
+  love.graphics.setColor(colors[3])
   love.graphics.rectangle("fill",0,0,160,480)
   love.graphics.setColor(255,255,255)
   eye.draw(map.player.awake)

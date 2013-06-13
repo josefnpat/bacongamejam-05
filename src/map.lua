@@ -234,15 +234,17 @@ function map.draw()
     love.graphics.setScissor()
 
     local alpha = math.floor((1-map.player.battery)*255)
-    love.graphics.setColor(0,0,0,alpha)
+    love.graphics.setColor(colors[1][1],colors[1][2],colors[1][3],alpha)
     love.graphics.rectangle("fill",map.x_offset,map.y_offset,480,480)
-    love.graphics.setColor(255,255,255)
+    love.graphics.setColor(colors[4])
     
     if alpha == 255 then
       love.graphics.setFont(fonts.horror)
       love.graphics.printf("PRESS SPACE TO\nCHARGE YOUR BATTERY.",
         map.x_offset,map.y_offset+240,480,"center")
     end
+    
+    love.graphics.setColor(255,255,255)
     
   end
 

@@ -169,7 +169,7 @@ function cut:init()
 end
 
 function cut:draw()
-  love.graphics.setColor(255,255,255)
+  love.graphics.setColor(colors[4])
   love.graphics.draw(cut.scenes[cut.current].img,0,224,0,4,4)
   love.graphics.setFont(fonts.normal)
   love.graphics.printf(cut.scenes[cut.current].text,32,100,640-64,"center")
